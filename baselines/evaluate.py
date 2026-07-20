@@ -172,6 +172,12 @@ def _score_one(rows, col, orient, thr):
     base = sum(labels) / len(labels)
     ap = average_precision(scores, labels)
     lo, hi = _boot_ci_ap(scores, labels)
+    # Sanity check: a correctly-computed point estimate must lie inside its bootstrap CI. When it
+    # does not (as with the earlier tie-ordering bug on absence-imputed scores), the estimator is
+    # order-dependent and the AUPRC is unreliable.
+    if not (lo - 1e-9 <= ap <= hi + 1e-9):
+        print(f"WARNING [{col}]: point estimate {ap:.4f} lies outside its bootstrap CI "
+              f"[{lo:.4f},{hi:.4f}] -- likely a tie/ordering artifact in average_precision().")
     return dict(n=len(scores), base=base, ap=ap, lo=lo, hi=hi,
                 auc=roc_auc(scores, labels), bacc=balanced_accuracy(scores, labels, thr))
 
