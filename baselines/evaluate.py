@@ -55,13 +55,28 @@ def average_precision(scores, labels):
     P = sum(labels)
     if P == 0:
         return float("nan")
-    tp = 0
+    # Sum over DISTINCT-score thresholds of (recall increment) x precision, collapsing tied
+    # scores into a single PR point (matches sklearn.average_precision_score). Walking tied
+    # items in file order would let the arbitrary ordering of a tie block bias the score — which
+    # matters here because absent-from-gnomAD variants share one score at the top of the ranking.
     ap = 0.0
-    for rank, i in enumerate(order, 1):
-        if labels[i]:
-            tp += 1
-            ap += tp / rank                 # precision at each true positive
-    return ap / P
+    tp = fp = 0
+    prev_recall = 0.0
+    n = len(order)
+    i = 0
+    while i < n:
+        j = i
+        while j < n and scores[order[j]] == scores[order[i]]:
+            if labels[order[j]]:
+                tp += 1
+            else:
+                fp += 1
+            j += 1
+        recall = tp / P
+        ap += (recall - prev_recall) * (tp / (tp + fp))
+        prev_recall = recall
+        i = j
+    return ap
 
 
 def balanced_accuracy(scores, labels, thresh):

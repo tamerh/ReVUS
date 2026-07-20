@@ -5,7 +5,10 @@ split against a GENE-DISJOINT split (GroupKFold on gene); the gap between them i
 apparent signal attributable to gene identity, and gene-disjoint is the benchmark's primary split.
 
 Requires scikit-learn / pandas / numpy (not needed for the pure-Python baselines/evaluate.py).
+HistGradientBoosting results shift across scikit-learn releases; install the pinned versions in
+baselines/requirements.txt to reproduce the published table exactly.
 
+    pip install -r baselines/requirements.txt
     python baselines/train_baselines.py --data-dir data/
 """
 import argparse
