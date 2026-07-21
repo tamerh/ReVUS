@@ -1,12 +1,13 @@
 # ReVUS — a temporal-holdout benchmark for VUS reclassification
 
 **ReVUS** (REclassification of Variants of Uncertain Significance) is a benchmark for a
-question the field has no standard evaluation for: *given a variant classified as a Variant
-of Uncertain Significance (VUS) at one point in time, will it later be reclassified — toward
-pathogenic, toward benign, or remain uncertain — and can a method predict which?*
+question that current variant benchmarks rarely target directly: *given a variant classified
+as a Variant of Uncertain Significance (VUS) at one point in time, will it later be
+reclassified — toward pathogenic, toward benign, or remain uncertain — and can a method
+predict which?*
 
-Existing longitudinal variant benchmarks score **static** pathogenic-vs-benign discrimination
-on newly observed variants. None of them target the **transition itself**. ReVUS labels each
+Longitudinal variant benchmarks typically score **static** pathogenic-vs-benign discrimination
+on newly observed variants, rather than the **transition itself**. ReVUS labels each
 VUS by its *observed* reclassification over a temporal holdout, so it is:
 
 - **A prediction target, not a re-encoding of static ClinVar labels** — the label is the
