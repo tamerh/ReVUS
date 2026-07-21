@@ -48,18 +48,22 @@ inputs; `outcome` is the label.
 
 ## Tasks
 
-1. **Resolution direction** — among variants that resolved to a definite call, predict
-   pathogenic/likely-pathogenic vs benign/likely-benign. n = 23,677 (a missense subset is
-   provided for sequence-based predictors). The primary clinical task.
+1. **Resolution direction (conditional)** — among the variants that resolved to a definite call,
+   predict pathogenic/likely-pathogenic vs benign/likely-benign. n = 23,677 (≈ 1 : 3.3 imbalance;
+   a missense subset is provided for sequence-based predictors). Conditions on hindsight (that the
+   variant resolved at all), so it isolates the direction signal.
 2. **Resolution likelihood** — will a 2022 VUS resolve at all by the horizon? n = 580,386,
    ≈ 4 % positive.
+3. **Resolution toward pathogenic (joint)** — will a 2022 VUS both resolve *and* resolve toward
+   pathogenic? n = 580,386, ≈ 1 % positive. Conditions on nothing known only in hindsight, so it is
+   the hardest of the three and the **recommended headline endpoint**.
 
 ## Splits and metrics
 
 - **Split:** temporal holdout (freeze = ClinVar 2022-06; outcomes = ClinVar 2026-07). A
   *forward-living* variant — register predictions on today's VUS and auto-score them as they
   resolve — is planned as a v1 upgrade.
-- **Metrics:** both tasks are imbalanced, so report **AUPRC** and **balanced accuracy**, not
+- **Metrics:** all three tasks are imbalanced, so report **AUPRC** and **balanced accuracy**, not
   raw accuracy/AUC, and report per-stratum (variant type, freeze review status, gene).
 
 ## Baselines
@@ -81,29 +85,23 @@ gene-disjoint comparison.
 ### Baseline features and third-party predictor scores
 
 `data/revus_resolved_features.tsv` ships freeze-time predictor features for the resolved
-variants — **SaProt** LLR, **phyloP** conservation, and **gnomAD** allele frequency — plus
-`gene`, `type`, and `review_2022` for stratification. Those three predictor columns are extracted
-from a pinned **BioBTree** snapshot by `build/extract_features.py`, keyed on the GRCh38 coordinate
-the label file already carries; they are *not* read from the primary sources directly (see
-[Reproducing the features](#reproducing-the-features)). Only redistributable predictors are
-shipped: SaProt (MIT — computed in-house from the MIT-licensed weights and ingested into BioBTree),
-phyloP (public), and gnomAD allele frequency (CC0). `gnomad_af` is the global allele frequency,
-falling back to the grpmax (popmax) value when the global figure is absent. Running
+variants — **SaProt** LLR, **phyloP** conservation, and **gnomAD** allele frequency (`gnomad_af`,
+the global frequency, falling back to the grpmax/popmax value when the global figure is absent) —
+plus `gene`, `type`, and `review_2022` for stratification. These predictor columns are a frozen
+extract from a pinned **BioBTree** snapshot, not read from the primary sources directly (see
+[Reproducing the features](#reproducing-the-features)); they cover all 23,677 resolved variants,
+with a blank where the snapshot has no value. Only redistributable predictors are shipped: SaProt
+(MIT), phyloP (public), and gnomAD allele frequency (CC0). Running
 `baselines/evaluate.py --leaderboard` on this file reproduces the SaProt, conservation,
 gnomAD-rarity, and majority-floor rows of the leaderboard directly.
 
-The feature table covers all 23,677 resolved variants; a cell is left blank where the snapshot has
-no value for that position.
-
 **AlphaMissense** (CC BY-NC-SA) and **REVEL** (academic, non-commercial) are *not* redistributed
-here. To reproduce their leaderboard rows, add `am` and `revel` columns to a local copy of the
-features file — either regenerate them from BioBTree with
-`python build/extract_features.py --with-restricted ...` (which emits `am` and `revel` alongside
-the others; the licenses forbid *redistributing* those scores, not computing them locally), or
-obtain them from dbNSFP (the paper used dbNSFP v4.x) and join by `variation_id` or
-`chrom:pos:ref:alt`. `evaluate.py` then scores them automatically on the shared intersection.
-Because these predictors apply only to missense variants and cover slightly different sets, the
-leaderboard reports per-predictor `n` and base rate.
+here. To score their leaderboard rows, add `am` and `revel` columns to a local copy of the features
+file — either regenerate them from BioBTree with `build/extract_features.py --with-restricted` (the
+licenses forbid *redistributing* those scores, not computing them locally), or obtain them from
+dbNSFP (the paper used dbNSFP v4.x) and join by `variation_id` or `chrom:pos:ref:alt`.
+`evaluate.py` then scores them automatically on the shared intersection; because they apply only to
+missense variants, the leaderboard reports per-predictor `n` and base rate.
 
 ## Reproducing the dataset
 
