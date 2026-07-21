@@ -48,6 +48,9 @@ inputs; `outcome` is the label.
 
 ## Tasks
 
+All tasks span variants of every type; only the sequence-predictor leaderboard (below) is
+restricted to missense, because those predictors are missense-only.
+
 1. **Resolution direction (conditional)** — among the variants that resolved to a definite call,
    predict pathogenic/likely-pathogenic vs benign/likely-benign. n = 23,677 (≈ 1 : 3.3 imbalance;
    a missense subset is provided for sequence-based predictors). Conditions on hindsight (that the
