@@ -1,0 +1,14 @@
+ReVUS predictor features — provenance
+labels: revus_2022-06_to_2026-07.tsv
+resolved variants read: 23,677   feature rows written: 23,677
+columns saprot/phylop/gnomad_af extracted via sugibiobtree.entry() (no Sugi Variant app).
+gnomad_af = global af, falling back to af_grpmax (popmax) when af is absent/zero.
+am/revel omitted (dbNSFP redistribution license); obtain from dbNSFP and join.
+
+BioBTree snapshot: v2.10.0 (commit e08dd52, build 2026-07-20) at http://localhost:9291
+  /ws/meta freshness_checked_at: 2026-07-17T06:38:18Z
+BioBTree per-dataset snapshot (group: last_built [status] source):
+  gnomad_variant: 2026-07-20 [merged] https://gnomad-public-us-east-1.s3.amazonaws.com/release/4.1/vcf/joint/gnomad.joint.v4.1.sites.chr{CHR}.vcf.bgz
+  conservation: 2026-07-12 [merged] raw_data/conservation/conservation_hg38.tsv.gz
+  alphamissense: 2026-01-27 [merged] https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz
+  saprot: 2026-07-14 [merged] the data dir/out_prod/work/saprot/saprot_llr.tsv.gz

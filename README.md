@@ -79,23 +79,30 @@ gene-disjoint comparison.
 
 ### Baseline features and third-party predictor scores
 
-`data/revus_resolved_features.tsv` ships freeze-time features for the resolved variants, but
-only for predictors whose licenses permit redistribution: **SaProt** (MIT, self-computed),
-**phyloP** conservation, and **gnomAD** allele frequency (CC0), plus `gene`, `type`, and
-`review_2022` for stratification. Running `baselines/evaluate.py --leaderboard` on this file
-reproduces the SaProt, conservation, gnomAD-rarity, and majority-floor rows of the leaderboard
-directly.
+`data/revus_resolved_features.tsv` ships freeze-time predictor features for the resolved
+variants — **SaProt** LLR, **phyloP** conservation, and **gnomAD** allele frequency — plus
+`gene`, `type`, and `review_2022` for stratification. Those three predictor columns are extracted
+from a pinned **BioBTree** snapshot by `build/extract_features.py`, keyed on the GRCh38 coordinate
+the label file already carries; they are *not* read from the primary sources directly (see
+[Reproducing the features](#reproducing-the-features)). Only redistributable predictors are
+shipped: SaProt (MIT — computed in-house from the MIT-licensed weights and ingested into BioBTree),
+phyloP (public), and gnomAD allele frequency (CC0). `gnomad_af` is the global allele frequency,
+falling back to the grpmax (popmax) value when the global figure is absent. Running
+`baselines/evaluate.py --leaderboard` on this file reproduces the SaProt, conservation,
+gnomAD-rarity, and majority-floor rows of the leaderboard directly.
 
-The feature table covers 23,602 of the 23,677 resolved variants; 75 could not be resolved to a
-current record at feature-extraction time and are omitted from the leaderboard (they remain in the
-label dataset).
+The feature table covers all 23,677 resolved variants; a cell is left blank where the snapshot has
+no value for that position.
 
 **AlphaMissense** (CC BY-NC-SA) and **REVEL** (academic, non-commercial) are *not* redistributed
-here. To reproduce their leaderboard rows, obtain their scores from dbNSFP (the paper used
-dbNSFP v4.x), join by `variation_id` or by `chrom:pos:ref:alt`, and add columns named `am` and
-`revel` to the features file; `evaluate.py` then scores them automatically on the shared
-intersection. Because these predictors apply only to missense variants and cover slightly
-different sets, the leaderboard reports per-predictor `n` and base rate.
+here. To reproduce their leaderboard rows, add `am` and `revel` columns to a local copy of the
+features file — either regenerate them from BioBTree with
+`python build/extract_features.py --with-restricted ...` (which emits `am` and `revel` alongside
+the others; the licenses forbid *redistributing* those scores, not computing them locally), or
+obtain them from dbNSFP (the paper used dbNSFP v4.x) and join by `variation_id` or
+`chrom:pos:ref:alt`. `evaluate.py` then scores them automatically on the shared intersection.
+Because these predictors apply only to missense variants and cover slightly different sets, the
+leaderboard reports per-predictor `n` and base rate.
 
 ## Reproducing the dataset
 
@@ -107,15 +114,37 @@ python build/build_revus.py \
     --out data/revus_2022-06_to_2026-07.tsv
 ```
 
-The build is a deterministic diff of two public ClinVar releases; no external services.
+The label build is a deterministic diff of two public ClinVar releases and uses no external
+services or data. (The predictor *features* are separate — a dated extract from a BioBTree
+snapshot, not covered by this determinism; see below.)
+
+## Reproducing the features
+
+The predictor columns (`saprot`, `phylop`, `gnomad_af`) are extracted from BioBTree, keyed on the
+GRCh38 coordinate the label file already carries:
+
+```bash
+# needs a running BioBTree (BIOBTREE_WS) and the `sugibiobtree` client importable
+python build/extract_features.py \
+    --labels data/revus_2022-06_to_2026-07.tsv \
+    --out data/revus_resolved_features.tsv --workers 12
+```
+
+Unlike the labels, the features are **not** a deterministic function of the two ClinVar releases:
+they are a frozen snapshot of BioBTree at extraction time, which re-ingests its sources on its own
+cycle. The extractor therefore pins the snapshot in
+`data/revus_resolved_features.tsv.provenance.txt` — the BioBTree version, commit and build date,
+and each dataset's build date and source URL. The shipped table was extracted from BioBTree
+v2.10.0 (commit `e08dd52`); reproducing it bit-for-bit needs the same snapshot, but every number in
+the paper reproduces from the shipped table regardless.
 
 ## Licensing and provenance
 
 - **Code:** MIT (`LICENSE`).
 - **Labels/coordinates:** derived from ClinVar, which is public domain. Redistributed here as a
   convenience; the authoritative source is NCBI ClinVar.
-- **Shipped features:** SaProt (MIT, self-computed), phyloP (public), and gnomAD allele frequency
-  (CC0) only.
+- **Shipped features:** SaProt (MIT — self-computed), phyloP (public), and gnomAD allele frequency
+  (CC0) only, surfaced through a pinned BioBTree snapshot (see *Reproducing the features*).
 - **Not redistributed:** AlphaMissense (CC BY-NC-SA) and REVEL (non-commercial) scores; obtain
   from dbNSFP under their own licenses (see above).
 
