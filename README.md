@@ -48,25 +48,27 @@ inputs; `outcome` is the label.
 
 ## Tasks
 
-All tasks span variants of every type; only the sequence-predictor leaderboard (below) is
+Both tasks span variants of every type; only the sequence-predictor comparison (below) is
 restricted to missense, because those predictors are missense-only.
 
 1. **Resolution direction (conditional)** — among the variants that resolved to a definite call,
    predict pathogenic/likely-pathogenic vs benign/likely-benign. n = 23,677 (≈ 1 : 3.3 imbalance;
    a missense subset is provided for sequence-based predictors). Conditions on hindsight (that the
    variant resolved at all), so it isolates the direction signal.
-2. **Resolution likelihood** — will a 2022 VUS resolve at all by the horizon? n = 580,386,
-   ≈ 4 % positive.
-3. **Resolution toward pathogenic (joint)** — will a 2022 VUS both resolve *and* resolve toward
-   pathogenic? n = 580,386, ≈ 1 % positive. Conditions on nothing known only in hindsight, so it is
-   the hardest of the three and the **recommended headline endpoint**.
+2. **Resolution toward pathogenic** — will a 2022 VUS resolve *toward pathogenic*, over the full
+   set? n = 580,386, ≈ 1 % positive. Conditions on nothing known only in hindsight — the
+   **recommended headline endpoint**.
+
+Whether a variant resolves *at all* (≈ 4 % of the full set) is reported as **characterisation** of
+the corpus, not a benchmark task: no single freeze-time feature predicts it, and a trained model
+does only by gene identity — the same gene-level effect seen on Task 2.
 
 ## Splits and metrics
 
 - **Split:** temporal holdout (freeze = ClinVar 2022-06; outcomes = ClinVar 2026-07). A
   *forward-living* variant — register predictions on today's VUS and auto-score them as they
   resolve — is planned as a v1 upgrade.
-- **Metrics:** all three tasks are imbalanced, so report **AUPRC** and **balanced accuracy**, not
+- **Metrics:** both tasks are imbalanced, so report **AUPRC** and **balanced accuracy**, not
   raw accuracy/AUC, and report per-stratum (variant type, freeze review status, gene).
 
 ## Baselines
@@ -75,7 +77,7 @@ A leaderboard entry must declare whether its scores were trained on ClinVar labe
 ClinVar-trained predictor is circularity-suspect on a ClinVar-derived target. ReVUS *exposes*
 this rather than hiding it.
 
-- **Freeze review status** is a strong non-predictor baseline for Task 2: expert-panel VUS
+- **Freeze review status** characterises resolution likelihood (not a benchmark task): expert-panel VUS
   resolve at ≈ 13 % vs ≈ 5 % for single-submitter VUS.
 - **Sequence predictors** on Task 1 (direction): reported in `baselines/`, split by whether the
   predictor is ClinVar-trained (e.g. REVEL) or ClinVar-independent (e.g. AlphaMissense, SaProt).
