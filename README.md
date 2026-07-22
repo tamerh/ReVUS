@@ -154,4 +154,18 @@ the paper reproduces from the shipped table regardless.
 
 ## Citation
 
-Preprint in preparation. Until then, please cite this repository.
+If you use ReVUS, please cite the preprint:
+
+> Gür, T. (2026). *ReVUS: A Temporal-Holdout Benchmark for the Reclassification of Variants of
+> Uncertain Significance.* https://sugi.bio/revus — Zenodo: https://doi.org/10.5281/zenodo.21496351
+
+```bibtex
+@misc{gur_revus_2026,
+  author       = {G\"{u}r, Tamer},
+  title        = {{ReVUS: A Temporal-Holdout Benchmark for the Reclassification of Variants of Uncertain Significance}},
+  year         = {2026},
+  howpublished = {\url{https://sugi.bio/revus}},
+  doi          = {10.5281/zenodo.21496351},
+  url          = {https://doi.org/10.5281/zenodo.21496351}
+}
+```
